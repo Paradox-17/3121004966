@@ -1,4 +1,4 @@
-﻿#define _CRT_SECURE_NO_WARNINGS // 忽略 fopen_s 的安全性警告
+﻿#define _CRT_SECURE_NO_WARNINGS // 忽略 fopen 的安全性警告
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,24 +9,24 @@
 #define MAX_TEXT_LENGTH 100000
 
 // 计算两个字符串的相似度
-double calculateSimilarity(const char* original, const char* copied) 
+double CalculateSimilarity(const char* original, const char* copied) 
 {
-    int original_len = strlen(original);
-    int copied_len = strlen(copied);
+    int OriginalLen = strlen(original);
+    int CopiedLen = strlen(copied);
 
     // 创建动态规划数组
-    int** dp = (int**)malloc((original_len + 1) * sizeof(int*));
-    for (int i = 0; i <= original_len; i++) 
+    int** dp = (int**)malloc((OriginalLen + 1) * sizeof(int*));
+    for (int i = 0; i <= OriginalLen; i++)
     {
-        dp[i] = (int*)malloc((copied_len + 1) * sizeof(int));
+        dp[i] = (int*)malloc((CopiedLen + 1) * sizeof(int));
     }
 
-    // 初始化第一行和第一列
-    for (int i = 0; i <= original_len; i++) 
+    // 动态规划
+    for (int i = 0; i <= OriginalLen; i++)
     {
-        for (int j = 0; j <= copied_len; j++) 
+        for (int j = 0; j <= CopiedLen; j++)
         {
-            if (i == 0 || j == 0)
+            if (i == 0 || j == 0) // 初始化第一行和第一列
                 dp[i][j] = 0;
             else if (original[i - 1] == copied[j - 1])
                 dp[i][j] = dp[i - 1][j - 1] + 1;
@@ -36,10 +36,10 @@ double calculateSimilarity(const char* original, const char* copied)
     }
 
     // 计算相似度
-    double similarity = (double)dp[original_len][copied_len] / original_len;
+    double similarity = (double)dp[OriginalLen][CopiedLen] / OriginalLen;
 
     // 释放动态规划数组
-    for (int i = 0; i <= original_len; i++) 
+    for (int i = 0; i <= OriginalLen; i++)
     {
         free(dp[i]);
     }
@@ -50,67 +50,61 @@ double calculateSimilarity(const char* original, const char* copied)
 
 int main(int argc, char* argv[]) 
 {
-    //printf("%d\n", argc);
-    //printf("%s\n", argv[0]);
-    //printf("%s\n", argv[1]);
-    //printf("%s\n", argv[2]);
-    //printf("%s\n", argv[3]);
-    //printf("%s\n", argv[4]);
-
-
     //检查命令行参数
     if (argc != 4) 
     {
-        printf("用法: %s <原文文件> <抄袭版文件> <答案文件>\n", argv[0]);
+        printf("命令行参数错误\n命令行格式: %s <原文文件> <抄袭版文件> <答案文件>\n当前输入：", argv[0]);
+        for (int i = 0; i < argc; i++)
+            printf("%s\n", argv[i]);
+        printf("共计%d个参数\n\n", argc);
         return 1;
     }
 
     // 打开原文文件
-    FILE* original_file;
-    if (fopen_s(&original_file, argv[1], "r") != 0) 
+    FILE* OriginalFile;
+    if (fopen_s(&OriginalFile, argv[1], "r") != 0) 
     {
         printf("无法打开原文文件\n");
         return 1;
     }
 
     // 打开抄袭版文件
-    FILE* copied_file;
-    if (fopen_s(&copied_file, argv[2], "r") != 0) 
+    FILE* CopiedFile;
+    if (fopen_s(&CopiedFile, argv[2], "r") != 0) 
     {
         printf("无法打开抄袭版文件\n");
-        fclose(original_file);
+        fclose(OriginalFile);
         return 1;
     }
 
     // 读取原文和抄袭版文本
-    char original_text[MAX_TEXT_LENGTH];
-    char copied_text[MAX_TEXT_LENGTH];
+    char OriginalText[MAX_TEXT_LENGTH];
+    char CopiedText[MAX_TEXT_LENGTH];
 
-    fgets(original_text, MAX_TEXT_LENGTH, original_file);
-    fgets(copied_text, MAX_TEXT_LENGTH, copied_file);
+    fgets(OriginalText, MAX_TEXT_LENGTH, OriginalFile);
+    fgets(CopiedText, MAX_TEXT_LENGTH, CopiedFile);
 
     // 计算相似度
-    double similarity = calculateSimilarity(original_text, copied_text);
+    double similarity = CalculateSimilarity(OriginalText, CopiedText);
 
     // 打开答案文件并写入相似度
-    FILE* answer_file;
-    if (fopen_s(&answer_file, argv[3], "w") != 0) 
+    FILE* AnswerFile;
+    if (fopen_s(&AnswerFile, argv[3], "w") != 0) 
     {
         printf("无法打开答案文件\n");
-        fclose(original_file);
-        fclose(copied_file);
+        fclose(OriginalFile);
+        fclose(CopiedFile);
         return 1;
     }
 
-    fprintf(answer_file, "重复率：%.2lf%%\n", similarity * 100);
+    fprintf(AnswerFile, "重复率：%.2lf%%\n", similarity * 100);
 
     // 关闭所有文件
-    fclose(original_file);
-    fclose(copied_file);
-    fclose(answer_file);
+    fclose(OriginalFile);
+    fclose(CopiedFile);
+    fclose(AnswerFile);
 
     printf("重复率计算完成，结果已写入 %s\n", argv[3]);
-    printf("相似度 %f\n", similarity);
 
     return 0;
 }
